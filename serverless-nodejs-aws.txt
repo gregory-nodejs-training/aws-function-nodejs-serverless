@@ -1,0 +1,62 @@
+
+	//=================== SERVERLESS com NodeJS e AWS Lambda
+	
+		-> Recomendado para funções pequenas, orientadas a eventos;
+		
+			Ex: Quando o envio de algum e-mail falhar; Quando acontecer determinada ação em algum serviço;
+
+	
+		-> Existem muitos providers para rodar cloud functions: AWS, Azure, Cloud Flare, Google Cloud, e cada um possui sua própria sintaxe
+		
+			-> Para contornar isso, existe um framework chamado: serverless.com
+			
+		
+		-> para instalar: yarn install serverless -g
+		
+		
+		-> Para criar o boilerplate da function, utilizar: serverless create --template "template_desejado" --path "caminho_desejado"
+		
+			Ex: serverless create --template aws-nodejs --path nodeless
+			
+			
+		-> Configurar perfil de credencial no serverless.
+		
+			Ex: serverless config credentials --provider aws --key "MEU_ID" --secret "MEU_SECRET" --profile "MEU-PERFIL" --overwrite
+			
+			
+		-> Executar deploy: serverless deploy -v
+			
+			
+		-> Formas mais utilizadas para disparo da função:
+		
+			-> Via requisição HTTP;
+			
+			-> Através de eventos (dentro da própria AWS);
+			
+				Ex: No upload de alguma imagem, disparar uma function que reduz o tamanho/qualidade;
+				
+			-> Disparo direto, via linha de comando;
+			
+			
+		-> Excluir function:
+		
+			-> serverless remove
+			
+		
+		-> Função criada utiliza as libs: aws-sdk, sharp, e path (utilizando basename e extname);
+		
+			-> Primeiramente, o argumento default event, que encapsula o conteúdo recebido na function, é decomposto em uma variável records;
+			
+				-> Com isso, records é tratado sempre como um array, para que a function trate envios simultâneos, sem a perda de nenhuma informação, através do .map;
+				
+				-> a iteração no .map é envolta em uma Promise.all para garantir que cada uma das iterações seja aguardada no await, antes de retornar o status code 301;
+				
+			-> de dentro do record, é extraído a key do objeto que foi feito o upload pro s3, já que a function só vai tratar os uploads feitos para os buckets da AWS;
+			
+				-> Com essa key, é obtido o objeto em sí do bucket, utilizando do S3 da lib aws-sdk. Como essa function só vai ser executado para arquivos do tipo jpg e png, é seguro tratá-la como imagem;
+				
+			
+			-> Utilizando a lib sharp, essa imagem passa por transformações para diminuir o tamanho, qualidade e forçar o formato jpeg;
+			
+			-> Em seguida, o objeto é salvo num bucket chamado 'compressed', diferente do bucket original, para garantir que a function n entre num looping infinito (se salvasse no mesmo bucket, que está especificado para tratar o evento de upload, aconteceria esse lopping);
+		
