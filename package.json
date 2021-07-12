@@ -1,0 +1,16 @@
+{
+  "name": "nodeless",
+  "version": "1.0.0",
+  "description": "Function created for studying AWS Functions",
+  "main": "optimize.js",
+  "license": "MIT",
+  "scripts": {
+    "predeploy": "npm uninstall sharp && npm install --arch=x64 --platform=linux sharp",
+    "deploy": "serverless deploy -v",
+    "postdeploy": "npm uninstall sharp && npm install sharp"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.943.0",
+    "sharp": "^0.28.3"
+  }
+}
